@@ -1,4 +1,6 @@
 ﻿using EcommerceCommon;
+using EcommerceCommon.OrderModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -6,18 +8,20 @@ using System.Text;
 
 namespace EcommerceTest
 {
-    class Test_Helper
+    public static class Test_Helper
     {
-        public static void Init()
+        public readonly static Datalayer_Orders _Orders = null;
+        public readonly static Datalayer_ClientDetails _ClientDetails = null;
+        static Test_Helper()
         {
-            if (Datalayer.OrderDB == null)
+            if (_Orders == null)
             {
-                Datalayer.OrderDB = new MSSQL_helper(Test_Helper.GetConfiguration()["ConnectionStrings:OrderDB"]);
+                _Orders = new Datalayer_Orders(Test_Helper.GetConfiguration()["ConnectionStrings:OrderDB"]);
             }
 
-            if (Datalayer.Customer_Details_API_Key == null)
+            if (_ClientDetails == null)
             {
-                Datalayer.Customer_Details_API_Key = Test_Helper.GetConfiguration()["API-Key:Customer-Details"];
+                _ClientDetails = new Datalayer_ClientDetails(Test_Helper.GetConfiguration()["API-Key:Customer-Details"]);
             }
         }
 
