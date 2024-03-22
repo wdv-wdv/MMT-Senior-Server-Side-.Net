@@ -1,19 +1,13 @@
 using EcommerceAPI.Controllers;
-using EcommerceCommon;
+using EcommerceAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace EcommerceTest
 {
     [TestClass]
     public class EcommerceOrders
     {
-        public EcommerceOrders()
-        {
-            Test_Helper.Init();
-        }
 
         [DataRow("C34454")]
         [DataRow("R34788")]
@@ -22,25 +16,24 @@ namespace EcommerceTest
         [DataTestMethod]
         public void Datalayer_GetOrder(string customerID)
         {
-            DC_CustomerOrder.DC_Order order = Datalayer.GetOrder(customerID);
+            var order = Test_Helper._Orders.GetOrder(customerID);
 
-            //### Should pass if DC_Order object is returned ###
-            Assert.IsTrue(order is DC_CustomerOrder.DC_Order);
-            Debug.Print(JsonConvert.SerializeObject(order));
+            //### Should pass if object is not null ###
+            Assert.IsNotNull(order);
         }
 
-        [DataRow("cat.owner@mmtdigital.co.uk","C34454")]
-        [DataRow("dog.owner@fake-customer.com","R34788")]
-        [DataRow("sneeze@fake-customer.com","A99001")]
-        [DataRow("santa@north-pole.lp.com","XM45001")]
+        [DataRow("cat.owner@mmtdigital.co.uk", "C34454")]
+        [DataRow("dog.owner@fake-customer.com", "R34788")]
+        [DataRow("sneeze@fake-customer.com", "A99001")]
+        [DataRow("santa@north-pole.lp.com", "XM45001")]
         [DataTestMethod]
         public void Datalayer_GetCustomer(string email, string customerID)
         {
-            var customer = Datalayer.GetCustomer(email);
+            var customer = Test_Helper._ClientDetails.GetCustomer(email);
 
             //### Should pass if CustomerIDs match ###
             Assert.IsTrue(customer.customerId.Equals(customerID, System.StringComparison.OrdinalIgnoreCase));
-            
+
         }
 
         [DataRow("cat.owner@mmtdigital.co.uk", "C34454")]
@@ -50,12 +43,16 @@ namespace EcommerceTest
         [DataTestMethod]
         public void API_LastOrders(string email, string customerID)
         {
-            var controller = new OrderController();
-            var result = controller.LastOrders(new DC_LastOrdersPostRequest() { User = email, CustomerID = customerID });
+            var controller = new OrderController(Test_Helper._Orders,Test_Helper._ClientDetails);
+            var result = controller.LastOrders(new LastOrdersPostRequest() { User = email, CustomerID = customerID });
 
-            //### Should pass if DC_CustomerOrder object is returned ###
-            Assert.IsTrue(result is DC_CustomerOrder);
-            Debug.Print(JsonConvert.SerializeObject(result));
+            //### Is anything return?? ###
+            Assert.IsNotNull(result);
+
+            //## Check properties exist ###
+            Assert.IsNotNull(result.GetType().GetProperty("Order"));
+            Assert.IsNotNull(result.GetType().GetProperty("Customer"));
+            //### etc, etc for all the remaining properties ... ###
         }
 
         [DataRow("cat.owner@mmtdigital.co.uk", "XXXXX")]
@@ -65,11 +62,11 @@ namespace EcommerceTest
         [DataTestMethod]
         public void API_LastOrders_Invalid_CustomerID(string email, string customerID)
         {
-            var controller = new OrderController();
-            var result = controller.LastOrders(new DC_LastOrdersPostRequest() { User = email, CustomerID = customerID });
+            var controller = new OrderController(Test_Helper._Orders, Test_Helper._ClientDetails);
+            var result = controller.LastOrders(new LastOrdersPostRequest() { User = email, CustomerID = customerID });
 
-            //### Should pass if NotFound is returned ###
-            Assert.IsTrue(result is NotFoundResult);
+            //### Should pass if NotFound is returned because customerID doesn't match the email ###
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
     }
 }

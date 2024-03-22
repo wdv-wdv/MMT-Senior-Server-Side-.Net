@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EcommerceCommon
+namespace EcommerceCommon.CustomerModels
 {
-    public class DC_CustomerDetails
+    public class CustomerDetails
 	{
         public string email { get; set; }
 		public string customerId { get; set; }

@@ -15,21 +15,13 @@ I would suggest running the Unit test first.
 
 ## Data access components (EcommerceCommon)
 
-### Customer details API
-
-This is a simply HttpClient HTTP requests process
-
 ### OrderDB
 
-I opted to go with a SQL statement, normally I would prefer to use a store procedure instead. The important thing here is using parameters and not concatenating strings.  To make life easier I use the MSSQL_Helper class I created to do all the heavy database work.
+I opted to go with Entity framework. Used the `Scaffold-DbContext` command to build the data models from the existing database. Access is provided via a singleton added to the services object for use by controllers dependency injection mechanism
 
-Entity framework would have been an option as well. However, I believe by using SQL and populating your own classes you can create a much more robust system. Entity framework is good for creating prototypes.
+### Customer details API
 
-### Data classes.
-
-I always add a DC_ prefer to my data-classes, it help to distinguish them from Helper classes and data layer classes. 
-
-I decided to nest the Customer Order classes (Order, OrderItems,…) for an inner class structure with the view it groups them as a unit 
+This is a simply HttpClient HTTP requests process. Access is provided via a singleton added to the services object for use by controllers dependency injection mechanism
 
 ## API Architecture
 
@@ -41,10 +33,10 @@ Internal logic flow:
 
 1.	Retrieves customer details from customer details API
 2.	Compares submitted *CustomerID* with *CustomerID* retrieved customer details API. Returns 404 when not matching 
-3.	Creates a *Customer Order* object which will act as payload for the API
-4.	Retrieves *Order* details from OrderDB
-5.	Updates *Order* address field form *Customer Details* object
-6.	Create and updates Customer fields (Fisrtname, lastname)
+3.  Retrieves *Order* details from OrderDB
+4.	Creates a Anonymous Type *Customer Order* object which will act as payload for the API
+5.	Add *Order* object property with Address from customer details and handel the is a gift logic
+6.	Add *Customer* object property (Fisrtname, lastname)
 7.	Return *Customer Order* object
 
 ## Testing 
@@ -61,7 +53,7 @@ And two for testing to the basic outcomes on the API controller self.
 
 Unit tests don’t have the concept of an appSettings.json file. For this I use the Test_Helper class I created to load and bind the setting for the API-key and database connection string
 
-To test the API self, you could use postman or I used these curl commands below in a GitBash window
+To test the API self, I used these curl commands below in a GitBash window
 
 ```
 curl -d "{ \"user\": \"cat.owner@mmtdigital.co.uk\",\"customerId\": \"C34454\"}" -w " %{http_code}" -H "Content-Type: application/json" "http://localhost:65110/v1/orders/lastorders"

@@ -1,7 +1,9 @@
 using EcommerceCommon;
+using EcommerceCommon.OrderModels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,25 +15,25 @@ using System.Threading.Tasks;
 
 namespace EcommerceAPI
 {
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            Datalayer.Customer_Details_API_Key = configuration["API-Key:Customer-Details"];
-            Datalayer.OrderDB = new MSSQL_helper(configuration.GetConnectionString("OrderDB"));
         }
-
         public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddControllers();
-            
+
+            //### Datalayer classes use for dependency injection by controllers ###
+            services.AddSingleton(_ => new Datalayer_Orders(Configuration.GetConnectionString("OrderDB")));
+            services.AddSingleton(_ => new Datalayer_ClientDetails(Configuration["API-Key:Customer-Details"]));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
